@@ -204,3 +204,57 @@
   font-size: 20px;
   font-weight: 700;
 }
+
+/* UI base para formularios y tarjetas */
+.page.container { padding: 16px; }
+
+.card {
+  background: var(--color-card, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius, 14px);
+  padding: 16px;
+  box-shadow: var(--shadow, 0 8px 24px rgba(2,21,78,0.08));
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.input, .select {
+  padding: 10px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+}
+
+.input:focus, .select:focus {
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.btn {
+  padding: 10px 14px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-primary, #2563eb);
+  color: var(--color-primary-contrast, #fff);
+  border-color: var(--color-primary, #2563eb);
+}
+
+.list { margin: 0; padding-left: 18px; }
+.btn-secondary { background: #fff; }
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+}
