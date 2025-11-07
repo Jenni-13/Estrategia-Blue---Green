@@ -20,18 +20,19 @@ export function ConductorLogin({ onLogin, goToRegistro }) {
   };
 
   return (
-    <div className="card">
-      <h2 className="section-title">Iniciar sesión como conductor</h2>
-      <div className="form-grid">
+    <div className="auth-card">
+      <h2 className="auth-title">Iniciar sesión como conductor</h2>
+      <div className="auth-subtitle">Accede para publicar viajes y gestionar tus reservas.</div>
+      <div className="auth-form">
         <div className="input-wrap">
           <label className="input-label">Correo</label>
-          <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@correo.com" />
+          <input className="auth-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@correo.com" />
         </div>
         <div className="input-wrap">
           <label className="input-label">Contraseña</label>
-          <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="********" />
+          <input className="auth-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="********" />
         </div>
-        <button className="btn btn-primary" onClick={entrar}>Entrar</button>
+        <button className="auth-btn auth-btn-primary" onClick={entrar}>Entrar</button>
         {error && <div style={{ color: '#dc2626', fontSize: 12 }}>{error}</div>}
       </div>
       <button className="link-btn" onClick={goToRegistro}>Registrarte como conductor</button>

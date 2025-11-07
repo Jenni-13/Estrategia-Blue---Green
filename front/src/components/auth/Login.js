@@ -3,7 +3,7 @@ import './style/auth.css';
 
 import { useAuth } from '../../context/AuthContext';
 
-export function Login({ onLogin, goToRegistro }) {
+export function Login({ goToRegistro, onLogin }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
@@ -21,20 +21,28 @@ export function Login({ onLogin, goToRegistro }) {
   };
 
   return (
-    <div className="card">
-      <h2 className="section-title">Iniciar sesión</h2>
-      <div className="form-grid">
-        <div className="input-wrap">
-          <label className="input-label">Correo</label>
-          <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@correo.com" />
-        </div>
-        <div className="input-wrap">
-          <label className="input-label">Contraseña</label>
-          <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="********" />
-        </div>
-        <button className="btn btn-primary" onClick={entrar}>Entrar</button>
+    <div className="split-form-content">
+      <div className="split-form-title">Correo</div>
+      <input
+        className="split-input"
+        type="email"
+        placeholder="Ingresa tu correo"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <div className="split-form-title">Contraseña</div>
+      <input
+        className="split-input"
+        type="password"
+        placeholder="Ingresa tu contraseña"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <div className="split-actions">
+        <button className="split-submit" onClick={entrar}>Iniciar sesión</button>
+        <button className="link-btn" onClick={goToRegistro}>Crear cuenta</button>
       </div>
-      <button className="link-btn" onClick={goToRegistro}>Crear cuenta</button>
+      {error && <div style={{ color: '#f87171', fontSize: 12 }}>{error}</div>}
     </div>
   );
 }

@@ -11,6 +11,7 @@ export default function UserAuthPage() {
     <div className="page container">
       <div className="app-header"><div className="brand"><h1>Usuario</h1></div></div>
 
+      {/* Estado de sesión */}
       <div className="card">
         {user ? (
           <div>
@@ -23,12 +24,23 @@ export default function UserAuthPage() {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 24 }}>
-        {view === 'registro' ? (
-          <Registro goToLogin={() => setView('login')} />
-        ) : (
-          <Login goToRegistro={() => setView('registro')} />
-        )}
+      {/* Split: izquierda registro, derecha login, sin pestañas arriba */}
+      <div className={`split-auth ${view === 'login' ? 'show-login' : 'show-register'}`}>
+        {/* Panel izquierdo: Registro */}
+        <div className="split-left">
+          <div className="mask coral-mask"></div>
+          <div className="panel">
+            <Registro goToLogin={() => setView('login')} />
+          </div>
+        </div>
+
+        {/* Panel derecho: Login */}
+        <div className="split-right">
+          <div className="mask navy-mask"></div>
+          <div className="panel">
+            <Login goToRegistro={() => setView('registro')} />
+          </div>
+        </div>
       </div>
     </div>
   );
