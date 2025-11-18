@@ -2,24 +2,42 @@ name: Deploy Blue-Green
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      # 1. Obtener el código
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_KEY }}
-          script: |
-            cd Estrategia-Blue---Green
-            git pull
-            docker compose build
-            docker compose up -d
+      # 2. Instalar SSH
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
+
+      # 3. Conectarse al servidor y ejecutar los comandos de despliegue
+      - name: Deploy to VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            cd ~/Estrategia-Blue---Green
+
+            # Actualiza repo
+            git pull origin main
+
+            # Construir nueva imagen para GREEN
+            docker build -t estrategia-blue---green-frontend_green ./frontend
+
+            # Detener contenedor GREEN viejo
+            docker stop frontend_green || true
+            docker rm frontend_green || true
+
+            # Crear nuevo GREEN
+            docker run -d --name frontend_green -p 8080:80 estrategia-blue---green-frontend_green
+          EOF
