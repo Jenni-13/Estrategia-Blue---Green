@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+
+  # FRONTEND
+  frontend_blue:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: frontend_blue
+    networks:
+      - blueng
+
+  frontend_green:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: frontend_green
+    networks:
+      - blueng
+
+  # BACKEND
+  backend_blue:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: backend_blue
+    networks:
+      - blueng
+
+  backend_green:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: backend_green
+    networks:
+      - blueng
+
+  # NGINX LOAD BALANCER
+  nginx:
+    image: nginx
+    container_name: nginx_lb
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend_blue
+      - frontend_green
+      - backend_blue
+      - backend_green
+    networks:
+      - blueng
+
+networks:
+  blueng:
