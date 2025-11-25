@@ -1,0 +1,47 @@
+name: Deploy Blue-Green
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
+
+      - name: Deploy Green
+        run: |
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            cd ~/Estrategia-Blue---Green
+            git pull origin main
+
+            # Ejecutar script de despliegue Green
+            bash scripts/deploy-green.sh
+          EOF
+
+      - name: Health Check Green
+        run: |
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            # Probar que el backend y frontend Green estén vivos
+            curl -f http://localhost:8080 || exit 1
+            curl -f http://localhost:3001/health || exit 1
+          EOF
+
+      - name: Switch Traffic to Green
+        if: success()
+        run: |
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            # Ejecutar script que modifica Nginx
+            bash scripts/switch.sh
+          EOF
