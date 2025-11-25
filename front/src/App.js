@@ -28,55 +28,55 @@ import { useSolicitudes } from './hooks/useSolicitudes';
 
 // Menú tipo panel desplegable (hamburguesa)
 function MenuPanel({ open, onClose }) {
-    return (
-      <div className={`menu-panel ${open ? 'open' : ''}`}>
-        <div className="menu-header-row">
-          <span className="menu-title">Menu</span>
-          <button className="menu-close" onClick={onClose} aria-label="Cerrar">✖</button>
-        </div>
-        <nav className="menu-list">
-          <Link to="/" className="menu-item" onClick={onClose}><span className="icon">🏠</span><span>Inicio</span></Link>
-          <Link to="/viajes" className="menu-item" onClick={onClose}><span className="icon">🧳</span><span>Viajes</span></Link>
-          <Link to="/solicitudes" className="menu-item" onClick={onClose}><span className="icon">🚀</span><span>Solicitudes</span></Link>
-          <Link to="/mis-viajes" className="menu-item" onClick={onClose}><span className="icon">🌍</span><span>Mis Viajes</span></Link>
-          <Link to="/mis-solicitudes" className="menu-item" onClick={onClose}><span className="icon">✉️</span><span>Mis Solicitudes</span></Link>
-          <Link to="/usuario" className="menu-item" onClick={onClose}><span className="icon">👤</span><span>Usuario</span></Link>
-          <Link to="/conductor" className="menu-item" onClick={onClose}><span className="icon">🚗</span><span>Conductor</span></Link>
-        </nav>
+  return (
+    <div className={`menu-panel ${open ? 'open' : ''}`}>
+      <div className="menu-header-row">
+        <span className="menu-title">Menu</span>
+        <button className="menu-close" onClick={onClose} aria-label="Cerrar">✖</button>
       </div>
-    );
+      <nav className="menu-list">
+        <Link to="/" className="menu-item" onClick={onClose}><span className="icon">🏠</span><span>Inicio</span></Link>
+        <Link to="/viajes" className="menu-item" onClick={onClose}><span className="icon">🧳</span><span>Viajes</span></Link>
+        <Link to="/solicitudes" className="menu-item" onClick={onClose}><span className="icon">🚀🧜‍♀️</span><span>Solicitudes</span></Link>
+        <Link to="/mis-viajes" className="menu-item" onClick={onClose}><span className="icon">🌍</span><span>Mis Viajes</span></Link>
+        <Link to="/mis-solicitudes" className="menu-item" onClick={onClose}><span className="icon">✉️</span><span>Mis Solicitudes</span></Link>
+        <Link to="/usuario" className="menu-item" onClick={onClose}><span className="icon">👤</span><span>Usuario</span></Link>
+        <Link to="/conductor" className="menu-item" onClick={onClose}><span className="icon">🚗</span><span>Conductor</span></Link>
+      </nav>
+    </div>
+  );
 }
 
 function App() {
-    const [menuOpen, setMenuOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
-    return (
-      <AuthProvider>
-        <BrowserRouter>
-          <header className="menu-header">
-            <div className="brand"><h1>Colibrí</h1></div>
-            <button
-              className="menu-toggle"
-              aria-label="Abrir menú"
-              onClick={() => setMenuOpen((v) => !v)}
-            >
-              <span></span><span></span><span></span>
-            </button>
-            <MenuPanel open={menuOpen} onClose={() => setMenuOpen(false)} />
-          </header>
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <header className="menu-header">
+          <div className="brand"><h1>Colibrí</h1></div>
+          <button
+            className="menu-toggle"
+            aria-label="Abrir menú"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span></span><span></span><span></span>
+          </button>
+          <MenuPanel open={menuOpen} onClose={() => setMenuOpen(false)} />
+        </header>
 
-          <Routes>
-            <Route path="/" element={<BuscarPage />} />
-            <Route path="/usuario" element={<UserAuthPage />} />
-            <Route path="/conductor" element={<DriverAuthPage />} />
-            <Route path="/viajes" element={<ViajesPage />} />
-            <Route path="/solicitudes" element={<SolicitudesPage />} />
-            <Route path="/mis-viajes" element={<MisViajesPage />} />
-            <Route path="/mis-solicitudes" element={<MisSolicitudesPage />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    );
+        <Routes>
+          <Route path="/" element={<BuscarPage />} />
+          <Route path="/usuario" element={<UserAuthPage />} />
+          <Route path="/conductor" element={<DriverAuthPage />} />
+          <Route path="/viajes" element={<ViajesPage />} />
+          <Route path="/solicitudes" element={<SolicitudesPage />} />
+          <Route path="/mis-viajes" element={<MisViajesPage />} />
+          <Route path="/mis-solicitudes" element={<MisSolicitudesPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
 export default App;
