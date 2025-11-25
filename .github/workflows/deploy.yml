@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Obtener el código
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
 
-      # 2. Instalar SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -22,22 +20,28 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
 
-      # 3. Conectarse al servidor y ejecutar los comandos de despliegue
-      - name: Deploy to VPS
+      - name: Deploy Green
         run: |
           ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
             cd ~/Estrategia-Blue---Green
-
-            # Actualiza repo
             git pull origin main
 
-            # Construir nueva imagen para GREEN
-            docker build -t estrategia-blue---green-frontend_green ./frontend
+            # Ejecutar script de despliegue Green
+            bash scripts/deploy-green.sh
+          EOF
 
-            # Detener contenedor GREEN viejo
-            docker stop frontend_green || true
-            docker rm frontend_green || true
+      - name: Health Check Green
+        run: |
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            # Probar que el backend y frontend Green estén vivos
+            curl -f http://localhost:8080 || exit 1
+            curl -f http://localhost:3001/health || exit 1
+          EOF
 
-            # Crear nuevo GREEN
-            docker run -d --name frontend_green -p 8080:80 estrategia-blue---green-frontend_green
+      - name: Switch Traffic to Green
+        if: success()
+        run: |
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            # Ejecutar script que modifica Nginx
+            bash scripts/switch.sh
           EOF
