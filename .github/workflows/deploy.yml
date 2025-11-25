@@ -13,10 +13,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup SSH
+     - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          # Añadir permisos a la carpeta
+          chmod 700 ~/.ssh
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key 
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
 
