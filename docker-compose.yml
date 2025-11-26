@@ -2,24 +2,29 @@ version: "3.9"
 
 services:
 
-  # FRONTEND
+  # FRONTEND BLUE (Servidor Antiguo)
   frontend_blue:
     build:
       context: .
       dockerfile: Dockerfile.client
     container_name: frontend_blue
+    ports:
+      - "3000:80"  # Puerto del Host para Health Check
     networks:
       - blueng
 
+  # FRONTEND GREEN (Servidor Nuevo)
   frontend_green:
     build:
       context: .
       dockerfile: Dockerfile.client
     container_name: frontend_green
+    ports:
+      - "3001:80"  # Puerto del Host para Health Check
     networks:
       - blueng
 
-  # BACKEND
+  # BACKEND BLUE
   backend_blue:
     build:
       context: .
@@ -28,6 +33,7 @@ services:
     networks:
       - blueng
 
+  # BACKEND GREEN
   backend_green:
     build:
       context: .
