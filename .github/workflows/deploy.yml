@@ -44,12 +44,11 @@ jobs:
       - name: 🩺 Health Check Green Server
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          # IP CORREGIDA
           ssh jennifer13br2004@136.117.87.54 << 'EOF'
-            # Estos comandos se ejecutan en la VM
-            curl -f http://localhost:8080 || exit 1
+            # 🟢 SOLO verificamos que el nuevo servidor Green (puerto 3001) responda.
+            # Asumimos que deploy-green.sh ya lo inició.
             curl -f http://localhost:3001/health || exit 1
-            echo "Health Check exitoso."
+            echo "Health Check exitoso en el servidor Green."
           EOF
 
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
