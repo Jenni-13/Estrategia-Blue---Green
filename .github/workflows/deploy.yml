@@ -16,26 +16,24 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. Configurar la clave SSH usando el Agente (SOLUCIÓN al error 'exit code 1')
-      # Esto carga la llave directamente en la memoria del agente, evitando problemas de formato.
+      # 🔑 1. Configurar la clave SSH usando el Agente 
       - name: 🔑 Setup SSH Agent
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 🛡️ 2. Añadir el host al known_hosts (solo se necesita esta parte del paso anterior)
+      # 🛡️ 2. Añadir el host al known_hosts con la IP CORRECTA
       - name: 🛡️ Add Server to Known Hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
+          # IP CORREGIDA: 136.117.87.54
+          ssh-keyscan -H 136.117.87.54 >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy Green Server
-        # El argumento '-i ~/.ssh/deploy_key' se ha eliminado.
-        # Ahora el SSH Agent se encarga de la autenticación.
         run: |
-          ssh jennifer13br2004@34.83.114.79 << 'EOF'
+          # IP CORREGIDA
+          ssh jennifer13br2004@136.117.87.54 << 'EOF'
             echo "Iniciando pull en el repositorio..."
-            # Asegúrate de que esta sea la ruta correcta en tu VM
             cd ~/Estrategia-Blue---Green 
             git pull origin main
 
@@ -46,9 +44,9 @@ jobs:
       - name: 🩺 Health Check Green Server
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          # El argumento '-i ~/.ssh/deploy_key' se ha eliminado.
-          ssh jennifer13br2004@34.83.114.79 << 'EOF'
-            # Asegúrate de que 8080 es el puerto BLUE y 3001 el puerto GREEN
+          # IP CORREGIDA
+          ssh jennifer13br2004@136.117.87.54 << 'EOF'
+            # Estos comandos se ejecutan en la VM
             curl -f http://localhost:8080 || exit 1
             curl -f http://localhost:3001/health || exit 1
             echo "Health Check exitoso."
@@ -57,8 +55,8 @@ jobs:
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          # El argumento '-i ~/.ssh/deploy_key' se ha eliminado.
-          ssh jennifer13br2004@34.83.114.79 << 'EOF'
+          # IP CORREGIDA
+          ssh jennifer13br2004@136.117.87.54 << 'EOF'
             # Ejecutar script que modifica la configuración de Nginx/balanceador
             bash scripts/switch.sh
           EOF
