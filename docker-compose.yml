@@ -2,41 +2,61 @@ version: "3.9"
 
 services:
 
-  # FRONTEND
+  # FRONTEND BLUE
   frontend_blue:
     build:
       context: .
       dockerfile: Dockerfile.client
     container_name: frontend_blue
-    # 🔵 CORRECCIÓN: Puerto 3000 del HOST (VM) mapea al puerto 80 del contenedor
     ports:
-      - "3000:80" 
+      - "3000:80"  # Puerto del Host para Health Check
     networks:
       - blueng
 
+  # FRONTEND GREEN
   frontend_green:
     build:
       context: .
       dockerfile: Dockerfile.client
     container_name: frontend_green
-    # 🟢 CORRECCIÓN: Puerto 3001 del HOST (VM) mapea al puerto 80 del contenedor
     ports:
-      - "3001:80" 
+      - "3001:80"  # Puerto del Host para Health Check
     networks:
       - blueng
-    
-  # ... (Los backends no necesitan puertos públicos si solo se comunican con el frontend)
 
-  # BACKEND
+  # BACKEND BLUE (Corrección de sintaxis)
   backend_blue:
-    # ... (Sin cambios)
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: backend_blue
+    networks:
+      - blueng
 
+  # BACKEND GREEN (Corrección de sintaxis)
   backend_green:
-    # ... (Sin cambios)
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: backend_green
+    networks:
+      - blueng
 
   # NGINX LOAD BALANCER
   nginx:
-    # ... (Sin cambios)
+    image: nginx
+    container_name: nginx_lb
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend_blue
+      - frontend_green
+      - backend_blue
+      - backend_green
+    networks:
+      - blueng
 
 networks:
   blueng:
