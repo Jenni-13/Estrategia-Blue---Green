@@ -54,8 +54,7 @@ jobs:
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          # IP CORREGIDA
           ssh jennifer13br2004@136.117.87.54 << 'EOF'
-            # Ejecutar script que modifica la configuración de Nginx/balanceador
-            bash scripts/switch.sh
+            # 🟢 CORRECCIÓN: Ahora se pasa el argumento 'green'
+            bash scripts/switch.sh green
           EOF
