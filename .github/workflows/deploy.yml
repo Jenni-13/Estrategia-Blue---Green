@@ -10,34 +10,33 @@ jobs:
     runs-on: ubuntu-latest
     
     # Define un entorno para mejor seguimiento de secretos y despliegues
-    environment: production # Puedes cambiar 'production' por el nombre de tu entorno
+    environment: production
 
     steps:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      - name: 🔑 Setup SSH Connection
+      # 🔑 1. Configurar la clave SSH usando el Agente (SOLUCIÓN al error 'exit code 1')
+      # Esto carga la llave directamente en la memoria del agente, evitando problemas de formato.
+      - name: 🔑 Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 🛡️ 2. Añadir el host al known_hosts (solo se necesita esta parte del paso anterior)
+      - name: 🛡️ Add Server to Known Hosts
         run: |
-          # 1. Crear el directorio SSH con permisos restringidos (700)
           mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          
-          # 2. Escribir la clave privada. 
-          #    Usamos printf para manejar correctamente los saltos de línea (la mejor práctica).
-          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          
-          # 3. Restringir permisos a la clave privada (600)
-          chmod 600 ~/.ssh/deploy_key
-          
-          # 4. Añadir el host al known_hosts para evitar la pregunta de confirmación
           ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy Green Server
-        # Asegúrate de que el usuario jennifer13br2004 exista y tenga la clave pública autorizada
+        # El argumento '-i ~/.ssh/deploy_key' se ha eliminado.
+        # Ahora el SSH Agent se encarga de la autenticación.
         run: |
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+          ssh jennifer13br2004@34.83.114.79 << 'EOF'
             echo "Iniciando pull en el repositorio..."
-            cd ~/Estrategia-Blue---Green
+            # Asegúrate de que esta sea la ruta correcta en tu VM
+            cd ~/Estrategia-Blue---Green 
             git pull origin main
 
             echo "Ejecutando despliegue Green..."
@@ -45,21 +44,21 @@ jobs:
           EOF
 
       - name: 🩺 Health Check Green Server
-        # El if: success() del siguiente paso ya no es necesario si este falla
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
-            # curl -f asegura que el comando falle (exit code 1) si el código de respuesta es 4xx/5xx
+          # El argumento '-i ~/.ssh/deploy_key' se ha eliminado.
+          ssh jennifer13br2004@34.83.114.79 << 'EOF'
+            # Asegúrate de que 8080 es el puerto BLUE y 3001 el puerto GREEN
             curl -f http://localhost:8080 || exit 1
             curl -f http://localhost:3001/health || exit 1
             echo "Health Check exitoso."
           EOF
 
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
-        # Solo se ejecuta si los pasos anteriores fueron exitosos
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+          # El argumento '-i ~/.ssh/deploy_key' se ha eliminado.
+          ssh jennifer13br2004@34.83.114.79 << 'EOF'
             # Ejecutar script que modifica la configuración de Nginx/balanceador
             bash scripts/switch.sh
           EOF
