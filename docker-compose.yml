@@ -1,32 +1,62 @@
+version: "3.9"
+
 services:
+
+  # FRONTEND BLUE (Servidor Antiguo)
   frontend_blue:
-    image: estrategia-blue---green_frontend_blue
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: frontend_blue
     ports:
-      - "3000:80"
+      - "3000:80"  # Puerto del Host para Health Check
+    networks:
+      - blueng
 
+  # FRONTEND GREEN (Servidor Nuevo)
   frontend_green:
-    image: estrategia-blue---green_frontend_green
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: frontend_green
     ports:
-      - "3001:80"
+      - "3001:80"  # Puerto del Host para Health Check
+    networks:
+      - blueng
 
+  # BACKEND BLUE
   backend_blue:
-    image: estrategia-blue---green_backend_blue
-    ports:
-      - "4000:4000"
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: backend_blue
+    networks:
+      - blueng
 
+  # BACKEND GREEN
   backend_green:
-    image: estrategia-blue---green_backend_green
-    ports:
-      - "4001:4000"
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: backend_green
+    networks:
+      - blueng
 
-  nginx_lb:
-    image: nginx:latest
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
+  # NGINX LOAD BALANCER
+  nginx:
+    image: nginx
+    container_name: nginx_lb
     ports:
       - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - frontend_blue
       - frontend_green
       - backend_blue
       - backend_green
+    networks:
+      - blueng
+
+networks:
+  blueng:
