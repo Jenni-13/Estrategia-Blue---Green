@@ -16,11 +16,15 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. Configurar la clave SSH usando el Agente 
+    # 🔑 Setup SSH Agent
       - name: 🔑 Setup SSH Agent
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # 🟢 CLAVE: Añadir permiso 600 y asegurar formato estándar
+          known-hosts-file: ~/.ssh/known_hosts 
+          # 🟢 Agregar el path de la llave.
+          ssh-add-options: '-k'
 
      # 🛡️ Add Server to Known Hosts
       - name: 🛡️ Add Server to Known Hosts
