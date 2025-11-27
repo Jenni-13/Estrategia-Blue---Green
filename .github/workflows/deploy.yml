@@ -1,35 +1,68 @@
 name: Deploy Blue-Green
+
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
+
 jobs:
-deploy:
-runs-on: ubuntu-latest
-steps:
-# 1. Obtener el código
-- name: Checkout code
-uses: actions/checkout@v3
-# 2. Instalar SSH
-- name: Setup SSH
-run: |
-mkdir -p ~/.ssh
-echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-chmod 600 ~/.ssh/deploy_key
-ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
-# 3. Conectarse al servidor y ejecutar los comandos de despliegue
-- name: Deploy to VPS
-run: |
-ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
-cd ~/Estrategia-Blue---Green
-# Actualiza repo
-git pull origin main
-# Construir nueva imagen para GREEN
-docker build -t estrategia-blue---green-frontend_green ./frontend
-# Detener contenedor GREEN viejo
-docker stop frontend_green || true
-docker rm frontend_green || true
-# Crear nuevo GREEN
-docker run -d --name frontend_green -p 8080:80
-estrategia-blue---green-frontend_green
-EOF
+  deploy:
+    runs-on: ubuntu-latest
+    
+    environment: production
+
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v3
+
+      # 🔑 1. CONFIGURACIÓN SSH MANUAL (SOLUCIÓN AL 'Permission denied')
+      # Escribimos la clave privada directamente a un archivo temporal.
+      - name: 🔑 Write Private Key and Add Host
+        run: |
+          # Crear directorio SSH
+          mkdir -p ~/.ssh
+
+          # Escribir el secreto de GitHub a un archivo (el nombre del archivo debe ser diferente para evitar conflictos)
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key 
+          
+          # Asignar permisos seguros a la clave privada (OBLIGATORIO para SSH)
+          chmod 600 ~/.ssh/deploy_key
+
+          # 🛡️ Añadir el host a known_hosts (IP: 34.83.114.79)
+          ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
+
+      # 🚀 2. DESPLIEGUE GREEN
+      - name: 🚀 Deploy Green Server
+        run: |
+          # Usamos -i para indicar la clave, en lugar de depender del ssh-agent
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            echo "Iniciando pull en el repositorio..."
+            cd ~/Estrategia-Blue---Green
+            git pull origin main
+
+            echo "Ejecutando despliegue Green con docker-compose..."
+            # 🟢 Llamamos al script que usa docker-compose (deploy-green.sh)
+            bash scripts/deploy-green.sh || exit 1 
+            
+            echo "Despliegue Green completado."
+          EOF
+
+      # 🩺 3. HEALTH CHECK GREEN
+      - name: 🩺 Health Check Green Server
+        run: |
+          echo "Realizando verificación de salud (Health Check) en el servidor Green..."
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            # 🟢 Verificamos el endpoint raíz ('/') del frontend en el puerto 3001
+            # Si esto falla, el Health Check falla y el pipeline se detiene
+            curl -f http://localhost:3001 || exit 1 
+            echo "Health Check exitoso en el servidor Green."
+          EOF
+
+      # 🔄 4. CAMBIAR TRÁFICO A GREEN
+      - name: 🔄 Switch Traffic to Green (Cambio de Router)
+        run: |
+          echo "Cambiando el tráfico al servidor Green..."
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+            # 🟢 Pasamos el argumento 'green' al script
+            bash scripts/switch.sh green
+          EOF
