@@ -53,10 +53,14 @@ jobs:
             echo "Health Check exitoso en el servidor Green."
           EOF
 
-      # 🔄 4. CAMBIO DE TRÁFICO
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
+        working-directory: ./Estrategia-Blue---Green
         run: |
           echo "Cambiando el tráfico al servidor Green..."
+          # Nos aseguramos de que el script sea ejecutable
+          chmod +x scripts/switch.sh
+          # Ejecutamos el script vía SSH
           ssh -i ~/.ssh/deploy_key jennifer13br2004@136.117.141.242 << 'EOF'
+            # Llamamos al script desde la ruta relativa al proyecto en el servidor
             bash scripts/switch.sh green
           EOF
