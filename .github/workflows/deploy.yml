@@ -28,14 +28,14 @@ jobs:
           # Asignar permisos seguros a la clave privada (OBLIGATORIO para SSH)
           chmod 600 ~/.ssh/deploy_key
 
-          # 🛡️ Añadir el host a known_hosts (IP: 34.83.114.79)
-          ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
+          # 🛡️ Añadir el host a known_hosts (IP: 136.117.141.242)
+          ssh-keyscan -H 136.117.141.242 >> ~/.ssh/known_hosts
 
       # 🚀 2. DESPLIEGUE GREEN
       - name: 🚀 Deploy Green Server
         run: |
           # Usamos -i para indicar la clave, en lugar de depender del ssh-agent
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@136.117.141.242 << 'EOF'
             echo "Iniciando pull en el repositorio..."
             cd ~/Estrategia-Blue---Green
             git pull origin main
@@ -51,7 +51,7 @@ jobs:
       - name: 🩺 Health Check Green Server
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@136.117.141.242 << 'EOF'
             # 🟢 Verificamos el endpoint raíz ('/') del frontend en el puerto 3001
             # Si esto falla, el Health Check falla y el pipeline se detiene
             curl -f http://localhost:3001 || exit 1 
@@ -62,7 +62,7 @@ jobs:
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+          ssh -i ~/.ssh/deploy_key jennifer13br2004@136.117.141.242 << 'EOF'
             # 🟢 Pasamos el argumento 'green' al script
             bash scripts/switch.sh green
           EOF
