@@ -54,9 +54,9 @@ jobs:
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          # Asegurarnos de que el script sea ejecutable
+          cd ~/Estrategia-Blue---Green
           chmod +x scripts/switch.sh
-          # Ejecutar el script vía SSH
           ssh -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'EOF'
+            cd ~/Estrategia-Blue---Green
             bash scripts/switch.sh green
           EOF
