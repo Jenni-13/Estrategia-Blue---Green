@@ -18,8 +18,7 @@ jobs:
       - name: 🔑 Write Private Key and Add Host
         run: |
           mkdir -p ~/.ssh
-          # Usar la clave real desde GitHub Secrets
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 136.117.141.242 >> ~/.ssh/known_hosts
 
