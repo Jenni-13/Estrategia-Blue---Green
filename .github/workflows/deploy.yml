@@ -1,55 +1,35 @@
 name: Deploy Blue-Green
-
 on:
-  push:
-    branches:
-      - main
-
+push:
+branches:
+- main
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    # Define un entorno para mejor seguimiento de secretos y despliegues
-    environment: production
-
-    steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v3
-
-    # 🔑 Setup SSH Agent
-      - name: 🔑 Setup SSH Agent
-        # 🟢 Usar la versión 0.7.0.
-        # En algunos entornos, la v0.8.0 tiene problemas para cargar claves.
-        uses: webfactory/ssh-agent@v0.7.0 
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Usamos las opciones para asegurar que la clave se cargue
-          ssh-add-options: '-k'
-
-     # 🛡️ Add Server to Known Hosts
-      - name: 🛡️ Add Server to Known Hosts
-        run: |
-          mkdir -p ~/.ssh
-          # 🚨 ¡NUEVA IP CORREGIDA!
-          ssh-keyscan -H 34.83.223.188 >> ~/.ssh/known_hosts
-
-      - name: 🚀 Deploy Green Server
-        run: |
-          # 🚨 ¡NUEVA IP CORREGIDA!
-          ssh jennifer13br2004@34.83.223.188 << 'EOF'
-            # ... comandos ...
-          EOF
-
-      - name: 🩺 Health Check Green Server
-        run: |
-          # 🚨 ¡NUEVA IP CORREGIDA!
-          ssh jennifer13br2004@34.83.223.188 << 'EOF'
-            # ... comandos ...
-          EOF
-
-      - name: 🔄 Switch Traffic to Green (Cambio de Router)
-        run: |
-          # 🚨 ¡NUEVA IP CORREGIDA!
-          ssh jennifer13br2004@34.83.223.188 << 'EOF'
-            # ... comandos ...
-          EOF
+deploy:
+runs-on: ubuntu-latest
+steps:
+# 1. Obtener el código
+- name: Checkout code
+uses: actions/checkout@v3
+# 2. Instalar SSH
+- name: Setup SSH
+run: |
+mkdir -p ~/.ssh
+echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+chmod 600 ~/.ssh/deploy_key
+ssh-keyscan -H 34.83.114.79 >> ~/.ssh/known_hosts
+# 3. Conectarse al servidor y ejecutar los comandos de despliegue
+- name: Deploy to VPS
+run: |
+ssh -i ~/.ssh/deploy_key jennifer13br2004@34.83.114.79 << 'EOF'
+cd ~/Estrategia-Blue---Green
+# Actualiza repo
+git pull origin main
+# Construir nueva imagen para GREEN
+docker build -t estrategia-blue---green-frontend_green ./frontend
+# Detener contenedor GREEN viejo
+docker stop frontend_green || true
+docker rm frontend_green || true
+# Crear nuevo GREEN
+docker run -d --name frontend_green -p 8080:80
+estrategia-blue---green-frontend_green
+EOF
