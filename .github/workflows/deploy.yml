@@ -18,12 +18,12 @@ jobs:
 
     # 🔑 Setup SSH Agent
       - name: 🔑 Setup SSH Agent
-        uses: webfactory/ssh-agent@v0.8.0
+        # 🟢 Usar la versión 0.7.0.
+        # En algunos entornos, la v0.8.0 tiene problemas para cargar claves.
+        uses: webfactory/ssh-agent@v0.7.0 
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # 🟢 CLAVE: Añadir permiso 600 y asegurar formato estándar
-          known-hosts-file: ~/.ssh/known_hosts 
-          # 🟢 Agregar el path de la llave.
+          # Usamos las opciones para asegurar que la clave se cargue
           ssh-add-options: '-k'
 
      # 🛡️ Add Server to Known Hosts
