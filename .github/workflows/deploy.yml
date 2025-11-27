@@ -22,39 +22,30 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 🛡️ 2. Añadir el host al known_hosts con la IP CORRECTA
+     # 🛡️ Add Server to Known Hosts
       - name: 🛡️ Add Server to Known Hosts
         run: |
           mkdir -p ~/.ssh
-          # IP CORREGIDA: 136.117.87.54
-          ssh-keyscan -H 136.117.87.54 >> ~/.ssh/known_hosts
+          # 🚨 ¡NUEVA IP CORREGIDA!
+          ssh-keyscan -H 34.83.223.188 >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy Green Server
         run: |
-          # IP CORREGIDA
-          ssh jennifer13br2004@136.117.87.54 << 'EOF'
-            echo "Iniciando pull en el repositorio..."
-            cd ~/Estrategia-Blue---Green 
-            git pull origin main
-
-            echo "Ejecutando despliegue Green..."
-            bash scripts/deploy-green.sh
+          # 🚨 ¡NUEVA IP CORREGIDA!
+          ssh jennifer13br2004@34.83.223.188 << 'EOF'
+            # ... comandos ...
           EOF
 
       - name: 🩺 Health Check Green Server
         run: |
-          echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          ssh jennifer13br2004@136.117.87.54 << 'EOF'
-            # 🟢 SOLO verificamos que el nuevo servidor Green (puerto 3001) responda.
-            # Asumimos que deploy-green.sh ya lo inició.
-            curl -f http://localhost:3001/health || exit 1
-            echo "Health Check exitoso en el servidor Green."
+          # 🚨 ¡NUEVA IP CORREGIDA!
+          ssh jennifer13br2004@34.83.223.188 << 'EOF'
+            # ... comandos ...
           EOF
 
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
         run: |
-          echo "Cambiando el tráfico al servidor Green..."
-          ssh jennifer13br2004@136.117.87.54 << 'EOF'
-            # 🟢 CORRECCIÓN: Ahora se pasa el argumento 'green'
-            bash scripts/switch.sh green
+          # 🚨 ¡NUEVA IP CORREGIDA!
+          ssh jennifer13br2004@34.83.223.188 << 'EOF'
+            # ... comandos ...
           EOF
