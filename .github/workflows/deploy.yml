@@ -14,18 +14,23 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. CONFIGURACIÓN SSH MANUAL
+      # 🔑 1. CONFIGURACIÓN SSH MEJORADA
       - name: 🔑 Write Private Key and Add Host
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
+          
+          # Verificar que la clave se creó correctamente
+          ls -la ~/.ssh/
+          # Verificar el formato de la clave
+          head -n 1 ~/.ssh/deploy_key
 
-      # 🚀 2. DESPLIEGUE GREEN
+      # 🚀 2. DESPLIEGUE GREEN (CORREGIDO)
       - name: 🚀 Deploy Green Server
         run: |
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'ENDSSH'
             echo "Iniciando pull en el repositorio..."
             cd ~/Estrategia-Blue---Green
             git pull origin main
@@ -34,25 +39,24 @@ jobs:
             bash scripts/deploy-green.sh || exit 1
 
             echo "Despliegue Green completado."
-            EOF 
+          ENDSSH
 
       # 🩺 3. HEALTH CHECK GREEN
       - name: 🩺 Health Check Green Server
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'ENDSSH'
             docker ps | grep frontend_green || exit 1
-            curl -I http://localhost:3001 || exit 1
+            curl -f http://localhost:3001 || exit 1
             echo "Health Check exitoso en el servidor Green."
-            EOF 
+          ENDSSH
 
-      # 🔄 4. SWITCH DE TRAFICO
-      - name: 🔄 Switch Traffic to Green (Cambio de Router)
+      # 🔄 4. SWITCH DE TRAFICO (CORREGIDO)
+      - name: 🔄 Switch Traffic to Green
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'ENDSSH'
             cd ~/Estrategia-Blue---Green
             chmod +x scripts/switch.sh
             bash scripts/switch.sh green
-          EOF
-          EOF 
+          ENDSSH
