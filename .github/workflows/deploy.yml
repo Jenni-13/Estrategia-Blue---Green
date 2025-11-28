@@ -14,47 +14,69 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. CONFIGURACIÓN SSH MANUAL
+      # 🔑 1. CONFIGURACIÓN SSH MEJORADA
       - name: 🔑 Write Private Key and Add Host
         run: |
           mkdir -p ~/.ssh
-          # Usando deploy_key en lugar de bluegreen_key
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
-          # Permisos para deploy_key
+          chmod 700 ~/.ssh
+          
+          # ESCRIBIR CLAVE CORRECTAMENTE
+          cat << 'KEY_EOF' > ~/.ssh/deploy_key
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          KEY_EOF
+          
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          
+          # VERIFICAR LA CLAVE
+          echo "=== Verificando clave SSH ==="
+          ls -la ~/.ssh/deploy_key
+          head -n 2 ~/.ssh/deploy_key
 
-      # 🚀 2. DESPLIEGUE GREEN
+      # 🔍 2. TEST DE CONEXIÓN (NUEVO PASO)
+      - name: 🔍 Test SSH Connection
+        run: |
+          echo "=== Probando conexión SSH ==="
+          ssh -i ~/.ssh/deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=10 \
+              -o LogLevel=ERROR \
+              jennifer13br2004@35.230.70.157 "echo '✅ Conexión SSH exitosa'"
+
+      # 🚀 3. DESPLIEGUE GREEN
       - name: 🚀 Deploy Green Server
         run: |
-          # Usando deploy_key
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'EOF'
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no jennifer13br2004@35.230.70.157 << 'DEPLOY_EOF'
             echo "Iniciando pull en el repositorio..."
             cd ~/Estrategia-Blue---Green
             git pull origin main
             echo "Ejecutando despliegue Green con docker-compose..."
             bash scripts/deploy-green.sh || exit 1
             echo "Despliegue Green completado."
-            EOF
+            DEPLOY_EOF
 
-      # 🩺 3. HEALTH CHECK GREEN
+      # 🩺 4. HEALTH CHECK GREEN
       - name: 🩺 Health Check Green Server
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          # Usando deploy_key
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'EOF'
-            docker ps | grep frontend_green || exit 1
-            curl -I http://localhost:3001 || exit 1
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no jennifer13br2004@35.230.70.157 << 'HEALTH_EOF'
+            echo "Contenedores ejecutándose:"
+            docker ps
+            echo "Verificando frontend_green..."
+            docker ps | grep frontend_green || { echo "❌ frontend_green no encontrado"; exit 1; }
+            echo "Probando servicio..."
+            curl -f http://localhost:3001 || { echo "❌ Servicio no responde"; exit 1; }
             echo "Health Check exitoso en el servidor Green."
-              EOF
+           HEALTH_EOF
 
-      # 🔄 4. SWITCH DE TRAFICO
-      - name: 🔄 Switch Traffic to Green (Cambio de Router)
+      # 🔄 5. SWITCH DE TRAFICO
+      - name: 🔄 Switch Traffic to Green
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          # Usando deploy_key
-          ssh -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'EOF'
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no jennifer13br2004@35.230.70.157 << 'SWITCH_EOF'
             cd ~/Estrategia-Blue---Green
             chmod +x scripts/switch.sh
             bash scripts/switch.sh green
-            EOF
+            echo "✅ Tráfico cambiado a Green"
+         SWITCH_EOF
