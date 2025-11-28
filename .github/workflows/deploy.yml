@@ -34,7 +34,7 @@ jobs:
             bash scripts/deploy-green.sh || exit 1
 
             echo "Despliegue Green completado."
-EOF # <-- ¡IMPORTANTE! SIN espacios antes de EOF
+            EOF 
 
       # 🩺 3. HEALTH CHECK GREEN
       - name: 🩺 Health Check Green Server
