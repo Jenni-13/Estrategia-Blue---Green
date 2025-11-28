@@ -30,6 +30,7 @@ jobs:
           username: jennifer13br2004
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script_stop: true
+          timeout: 1200s
           script: |
             echo "Iniciando pull y despliegue automatizado..."
             cd ~/Estrategia-Blue---Green
