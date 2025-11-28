@@ -14,15 +14,16 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 📜 1. AGREGAR HOST AL known_hosts (CORRECCIÓN FINAL)
+      # 📜 1. AGREGAR HOST AL known_hosts (CORREGIDO Y ROBUSTO)
       - name: 📜 Add Known Host
         run: |
-          # Crear el directorio .ssh si no existe
+          # Crear el directorio .ssh si no existe y establecer permisos
           mkdir -p ~/.ssh 
-          # Escribir la huella digital del host en known_hosts
+          chmod 700 ~/.ssh
+          # Escribir la huella digital del host
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
 
-      # 🚀 2. DESPLIEGUE GREEN Y HEALTH CHECK (COMBINADO EN UN PASO)
+      # 🚀 2. DESPLIEGUE GREEN Y HEALTH CHECK
       - name: 🚀 Deploy Green Server and Check Health
         uses: appleboy/ssh-action@v1.0.1
         with:
