@@ -34,6 +34,9 @@ jobs:
           script: |
             echo "Iniciando pull en el repositorio..."
             cd ~/Estrategia-Blue---Green
+            git fetch origin
+            git reset --hard origin/main
+            git pull origin main
             git pull origin main
             bash scripts/deploy-green.sh || exit 1
             echo "Realizando verificación de salud (Health Check)..."
