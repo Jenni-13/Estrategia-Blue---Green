@@ -2,7 +2,69 @@ name: Deploy Blue-Green
 
 on:
   push:
+    branches:name: Deploy Blue-Green
+  on:
+    push:
     branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v3
+
+      # 📜 1. AGREGAR HOST AL known_hosts (El "switch" de verificación)
+      # Esto previene el error "Host key verification failed" que puede ser el "switch" faltante.
+      - name: 📜 Add Known Host
+        run: ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
+
+      # 🚀 2. DESPLIEGUE GREEN Y HEALTH CHECK
+      - name: 🚀 Deploy Green Server and Check Health
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          host: 35.230.70.157
+          username: jennifer13br2004
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true # Detiene el workflow si algún comando falla en el servidor
+          script: |
+            echo "Iniciando pull en el repositorio..."
+            cd ~/Estrategia-Blue---Green
+            git pull origin main
+
+            echo "Ejecutando despliegue Green con docker-compose..."
+            bash scripts/deploy-green.sh || exit 1 # Falla si el deploy falla
+
+            echo "Realizando verificación de salud (Health Check) en el servidor Green..."
+            # 1. Verificar si el contenedor Green está corriendo
+            docker ps | grep frontend_green || exit 1
+            # 2. Verificar si la aplicación Green responde (puerto 3001)
+            curl -I http://localhost:3001 || exit 1
+            echo "Health Check exitoso en el servidor Green."
+
+      # 🔄 3. SWITCH DE TRAFICO Y ACTUALIZACIÓN DE ESTADO EN .ENV
+      - name: 🔄 Switch Traffic to Green (Update Router and .env)
+        uses: appleboy/ssh-action@v1.0.1
+        with:
+          host: 35.230.70.157
+          username: jennifer13br2004
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            echo "Cambiando el tráfico al servidor Green..."
+            cd ~/Estrategia-Blue---Green
+            
+            # 1. Ejecuta el script de enrutamiento (cambio de proxy)
+            bash scripts/switch.sh green
+            
+            # 2. ACTUALIZA EL ESTADO CONDICIONAL EN EL ARCHIVO .ENV
+            # Esto establece Green como el entorno activo
+            sed -i 's/^CURRENT_DEPLOYMENT=.*/CURRENT_DEPLOYMENT=green/' .env
+            
+            echo "Estado de CURRENT_DEPLOYMENT actualizado a green en .env. Despliegue completado."
       - main
 
 jobs:
