@@ -59,7 +59,7 @@ jobs:
             echo "6. Ejecutando despliegue Green..."
             bash scripts/deploy-green.sh
             echo "✅ Despliegue Green completado exitosamente"
-EOF
+             EOF
 
       # Los demás pasos permanecen igual...
       - name: 🩺 Health Check Green Server
@@ -72,7 +72,7 @@ EOF
             docker ps | grep frontend_green || echo "⚠️ frontend_green no encontrado"
             echo "Probando servicio en puerto 3001..."
             curl -f http://localhost:3001 || echo "⚠️ Servicio no responde en puerto 3001"
-EOF
+            EOF
 
       - name: 🔄 Switch Traffic to Green
         run: |
@@ -82,4 +82,4 @@ EOF
             chmod +x scripts/switch.sh
             bash scripts/switch.sh green
             echo "✅ Tráfico cambiado a Green exitosamente"
-EOF
+             EOF
