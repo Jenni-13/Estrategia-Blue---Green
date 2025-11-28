@@ -14,7 +14,7 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. CONFIGURACIÓN SSH MEJORADA
+      # 🔑 CONFIGURACIÓN SSH CORREGIDA
       - name: 🔑 Write Private Key and Add Host
         run: |
           mkdir -p ~/.ssh
@@ -22,12 +22,10 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
           
-          # Verificar que la clave se creó correctamente
-          ls -la ~/.ssh/
-          # Verificar el formato de la clave
-          head -n 1 ~/.ssh/deploy_key
+          # Verificar la conexión SSH
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 "echo '✅ SSH connection test successful'" || echo '❌ SSH connection failed'
 
-      # 🚀 2. DESPLIEGUE GREEN (CORREGIDO)
+      # 🚀 DESPLIEGUE GREEN CORREGIDO
       - name: 🚀 Deploy Green Server
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'ENDSSH'
@@ -41,7 +39,7 @@ jobs:
             echo "Despliegue Green completado."
           ENDSSH
 
-      # 🩺 3. HEALTH CHECK GREEN
+      # 🩺 HEALTH CHECK GREEN
       - name: 🩺 Health Check Green Server
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
@@ -51,7 +49,7 @@ jobs:
             echo "Health Check exitoso en el servidor Green."
           ENDSSH
 
-      # 🔄 4. SWITCH DE TRAFICO (CORREGIDO)
+      # 🔄 SWITCH DE TRAFICO
       - name: 🔄 Switch Traffic to Green
         run: |
           echo "Cambiando el tráfico al servidor Green..."
