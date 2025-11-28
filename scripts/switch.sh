@@ -1,16 +1,41 @@
 #!/bin/bash
+set -e
 
-if [ "$1" == "blue" ]; then
-    sed -i 's/green/blue/g' ~/Estrategia-Blue---Green/nginx/default.conf
-elif [ "$1" == "green" ]; then
-    sed -i 's/blue/green/g' ~/Estrategia-Blue---Green/nginx/default.conf
+cd ~/Estrategia-Blue---Green
+
+# 1. Leer el estado actual
+CURRENT_COLOR=$(grep CURRENT_DEPLOYMENT front/.env | cut -d '=' -f 2)
+
+if [ "$CURRENT_COLOR" == "blue" ]; then
+    NEW_COLOR="green"
+    PORT="3001"
+elif [ "$CURRENT_COLOR" == "green" ]; then
+    NEW_COLOR="blue"
+    PORT="3000"
 else
-    echo "Uso correcto: ./switch.sh blue | green"
-    exit 1
+    echo "ERROR: CURRENT_DEPLOYMENT no válido. Desplegando en Blue por defecto."
+    NEW_COLOR="blue"
+    PORT="3000"
 fi
 
-# Reinicia el contenedor de Nginx directamente
-# 🚨 CORRECCIÓN: Usar el nombre de contenedor correcto 'nginx'
-docker restart nginx
+echo "Desplegando la nueva versión en el entorno: $NEW_COLOR (Puerto $PORT)"
 
-echo "🔁 Tráfico redirigido a $1 ✓"
+# 2. Despliegue del nuevo entorno (docker compose up -d servicio_nuevo)
+# Aquí puedes usar tu script deploy-blue.sh o deploy-green.sh
+
+# Ejemplo simplificado: Usa docker compose up -d $NEW_COLOR
+docker compose up -d frontend_$NEW_COLOR
+
+# 3. Health Check (Opción simplificada)
+echo "Realizando Health Check en puerto interno 80..."
+docker ps | grep frontend_$NEW_COLOR || exit 1
+
+# 4. Switch de tráfico
+bash scripts/switch.sh $NEW_COLOR
+
+# 5. Actualizar el .env
+sed -i "s/^CURRENT_DEPLOYMENT=.*/CURRENT_DEPLOYMENT=$NEW_COLOR/" front/.env
+echo "Estado de CURRENT_DEPLOYMENT actualizado a $NEW_COLOR."
+
+# Forzar reinicio de Nginx (para mayor seguridad)
+docker compose restart nginx
