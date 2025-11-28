@@ -37,7 +37,7 @@ function MenuPanel({ open, onClose }) {
       <nav className="menu-list">
         <Link to="/" className="menu-item" onClick={onClose}><span className="icon">🏠</span><span>Inicio</span></Link>
         <Link to="/viajes" className="menu-item" onClick={onClose}><span className="icon">🧳</span><span>Viajes</span></Link>
-        <Link to="/solicitudes" className="menu-item" onClick={onClose}><span className="icon">🚀🧜‍♀️🧜‍♀️</span><span>Solicitudes</span></Link>
+        <Link to="/solicitudes" className="menu-item" onClick={onClose}><span className="icon">🧜‍♀️🚀🧜‍♀️</span><span>Solicitudes</span></Link>
         <Link to="/mis-viajes" className="menu-item" onClick={onClose}><span className="icon">🌍</span><span>Mis Viajes</span></Link>
         <Link to="/mis-solicitudes" className="menu-item" onClick={onClose}><span className="icon">✉️</span><span>Mis Solicitudes</span></Link>
         <Link to="/usuario" className="menu-item" onClick={onClose}><span className="icon">👤</span><span>Usuario</span></Link>
