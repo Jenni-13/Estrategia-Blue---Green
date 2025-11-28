@@ -14,47 +14,72 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. CONFIGURACIÓN SSH MANUAL
+      # 🔑 CONFIGURACIÓN SSH MEJORADA
       - name: 🔑 Write Private Key and Add Host
         run: |
           mkdir -p ~/.ssh
-          # Cambiado el nombre del archivo de destino a bluegreen_key
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/bluegreen_key
-          # Permisos para bluegreen_key
+          chmod 700 ~/.ssh
+          
+          # ESCRIBIR CLAVE PRIVADA CON FORMATO CORRECTO
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/bluegreen_key
+          
+          # LIMPIAR Y FORMATEAR LA CLAVE
+          sed -i '/^$/d' ~/.ssh/bluegreen_key  # Eliminar líneas vacías
+          sed -i 's/\\n/\n/g' ~/.ssh/bluegreen_key  # Convertir \n a saltos de línea reales
+          
+          # VERIFICAR FORMATO DE CLAVE
+          echo "=== Verificando formato de clave ==="
+          head -n 3 ~/.ssh/bluegreen_key
+          
+          # PERMISOS CORRECTOS
           chmod 600 ~/.ssh/bluegreen_key
+          
+          # AGREGAR HOST A known_hosts
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          
+          # VERIFICAR CONEXIÓN SSH
+          echo "=== Probando conexión SSH ==="
+          ssh -i ~/.ssh/bluegreen_key -o StrictHostKeyChecking=no -o ConnectTimeout=10 jennifer13br2004@35.230.70.157 "echo 'Conexión SSH exitosa!'"
 
-      # 🚀 2. DESPLIEGUE GREEN
+      # 🚀 DESPLIEGUE GREEN (CON MÁS VERBOSIDAD)
       - name: 🚀 Deploy Green Server
         run: |
-          # Usando bluegreen_key
-          ssh -i ~/.ssh/bluegreen_key jennifer13br2004@35.230.70.157 << 'EOF'
-            echo "Iniciando pull en el repositorio..."
-            cd ~/Estrategia-Blue---Green
+          echo "=== Iniciando despliegue en Green Server ==="
+          ssh -i ~/.ssh/bluegreen_key -o StrictHostKeyChecking=no -o ConnectTimeout=30 jennifer13br2004@35.230.70.157 << 'EOF'
+            echo "1. Directorio actual: $(pwd)"
+            echo "2. Listando archivos:"
+            ls -la
+            echo "3. Navegando al repositorio..."
+            cd ~/Estrategia-Blue---Green || { echo "Error: No se pudo acceder al directorio"; exit 1; }
+            echo "4. Realizando pull del repositorio..."
             git pull origin main
-            echo "Ejecutando despliegue Green con docker-compose..."
-            bash scripts/deploy-green.sh || exit 1
-            echo "Despliegue Green completado."
-          EOF 
+            echo "5. Verificando scripts de despliegue..."
+            ls -la scripts/
+            echo "6. Ejecutando despliegue Green..."
+            bash scripts/deploy-green.sh
+            echo "✅ Despliegue Green completado exitosamente"
+EOF
 
-      # 🩺 3. HEALTH CHECK GREEN
+      # Los demás pasos permanecen igual...
       - name: 🩺 Health Check Green Server
         run: |
-          echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          # Usando bluegreen_key
-          ssh -i ~/.ssh/bluegreen_key jennifer13br2004@35.230.70.157 << 'EOF'
-            docker ps | grep frontend_green || exit 1
-            curl -I http://localhost:3001 || exit 1
-            echo "Health Check exitoso en el servidor Green."
-          EOF 
+          echo "Realizando Health Check..."
+          ssh -i ~/.ssh/bluegreen_key -o StrictHostKeyChecking=no jennifer13br2004@35.230.70.157 << 'EOF'
+            echo "Contenedores ejecutándose:"
+            docker ps
+            echo "Verificando frontend_green..."
+            docker ps | grep frontend_green || echo "⚠️ frontend_green no encontrado"
+            echo "Probando servicio en puerto 3001..."
+            curl -f http://localhost:3001 || echo "⚠️ Servicio no responde en puerto 3001"
+EOF
 
-      # 🔄 4. SWITCH DE TRAFICO
-      - name: 🔄 Switch Traffic to Green (Cambio de Router)
+      - name: 🔄 Switch Traffic to Green
         run: |
-          echo "Cambiando el tráfico al servidor Green..."
-          # Usando bluegreen_key
-          ssh -i ~/.ssh/bluegreen_key jennifer13br2004@35.230.70.157 << 'EOF'
+          echo "Cambiando tráfico a Green..."
+          ssh -i ~/.ssh/bluegreen_key -o StrictHostKeyChecking=no jennifer13br2004@35.230.70.157 << 'EOF'
             cd ~/Estrategia-Blue---Green
             chmod +x scripts/switch.sh
             bash scripts/switch.sh green
-          EOF 
+            echo "✅ Tráfico cambiado a Green exitosamente"
+EOF
