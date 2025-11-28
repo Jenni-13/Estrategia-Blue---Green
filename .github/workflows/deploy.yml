@@ -54,5 +54,4 @@ jobs:
             cd ~/Estrategia-Blue---Green
             chmod +x scripts/switch.sh
             bash scripts/switch.sh green
-          EOF
-EOF # <-- ¡IMPORTANTE! SIN espacios antes de EOF
+            EOF
