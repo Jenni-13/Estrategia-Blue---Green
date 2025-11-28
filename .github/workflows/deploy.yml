@@ -14,56 +14,47 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. CONFIGURACIÓN SSH MANUAL - CORREGIDO
+      # 🔑 1. CONFIGURACIÓN SSH MANUAL
       - name: 🔑 Write Private Key and Add Host
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRTVATE_KEY }}" | tr -d '\r' > ~/.ssh/bluegreen_key
+          # Cambiado el nombre del archivo de destino a bluegreen_key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/bluegreen_key
+          # Permisos para bluegreen_key
           chmod 600 ~/.ssh/bluegreen_key
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-          
-          # Verificar que la clave se creó correctamente
-          ls -la ~/.ssh/
-          # Verificar el formato de la clave
-          head -n 1 ~/.ssh/bluegreen_key
-
-      # 🔍 DEBUG SSH CONNECTION
-      - name: 🔍 Debug SSH Connection
-        run: |
-          echo "=== Testing SSH connection ==="
-          ssh -o BatchMode=yes -o ConnectTimeout=5 -i ~/.ssh/bluegreen_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH connection successful'" || echo "SSH connection failed"
-          
-          echo "=== Testing SSH with verbose ==="
-          ssh -vvv -o BatchMode=yes -o ConnectTimeout=5 -i ~/.ssh/bluegreen_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH connection successful'" || true
+          ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
 
       # 🚀 2. DESPLIEGUE GREEN
       - name: 🚀 Deploy Green Server
         run: |
-          ssh -o BatchMode=yes -i ~/.ssh/bluegreen_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          # Usando bluegreen_key
+          ssh -i ~/.ssh/bluegreen_key jennifer13br2004@35.230.70.157 << 'EOF'
             echo "Iniciando pull en el repositorio..."
-            cd ~/Estrategia-Blue--Green
+            cd ~/Estrategia-Blue---Green
             git pull origin main
             echo "Ejecutando despliegue Green con docker-compose..."
             bash scripts/deploy-green.sh || exit 1
             echo "Despliegue Green completado."
-          EOF
+          EOF 
 
       # 🩺 3. HEALTH CHECK GREEN
       - name: 🩺 Health Check Green Server
         run: |
           echo "Realizando verificación de salud (Health Check) en el servidor Green..."
-          ssh -o BatchMode=yes -i ~/.ssh/bluegreen_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          # Usando bluegreen_key
+          ssh -i ~/.ssh/bluegreen_key jennifer13br2004@35.230.70.157 << 'EOF'
             docker ps | grep frontend_green || exit 1
-            curl -f http://localhost:3001 || exit 1
+            curl -I http://localhost:3001 || exit 1
             echo "Health Check exitoso en el servidor Green."
-          EOF
+          EOF 
 
       # 🔄 4. SWITCH DE TRAFICO
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
         run: |
           echo "Cambiando el tráfico al servidor Green..."
-          ssh -o BatchMode=yes -i ~/.ssh/bluegreen_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            cd ~/Estrategia-Blue--Green
+          # Usando bluegreen_key
+          ssh -i ~/.ssh/bluegreen_key jennifer13br2004@35.230.70.157 << 'EOF'
+            cd ~/Estrategia-Blue---Green
             chmod +x scripts/switch.sh
             bash scripts/switch.sh green
-          EOF
+          EOF 
