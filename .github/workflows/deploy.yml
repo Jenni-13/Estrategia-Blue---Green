@@ -14,11 +14,11 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 1. CONFIGURACIÓN SSH MANUAL
+      # 🔑 1. CONFIGURACIÓN SSH MANUAL - CORREGIDO
       - name: 🔑 Write Private Key and Add Host
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/bluegreen_key
+          echo "${{ secrets.SSH_PRTVATE_KEY }}" | tr -d '\r' > ~/.ssh/bluegreen_key
           chmod 600 ~/.ssh/bluegreen_key
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
           
