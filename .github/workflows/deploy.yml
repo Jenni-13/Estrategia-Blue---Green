@@ -48,7 +48,6 @@ jobs:
       - name: 🔄 Switch Traffic to Green (Update Router and .env)
         uses: appleboy/ssh-action@v1.0.1
         with:
-          # 🚨 IP ACTUALIZADA
           host: 34.127.35.52
           username: jennifer13br2004
           key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -57,5 +56,8 @@ jobs:
             echo "Cambiando el tráfico al servidor Green..."
             cd ~/Estrategia-Blue---Green
             bash scripts/switch.sh green
-            sed -i 's/^CURRENT_DEPLOYMENT=.*/CURRENT_DEPLOYMENT=green/' .env
+            
+            # 🚨 CORRECCIÓN: Apuntando a la ruta correcta 'front/.env'
+            sed -i 's/^CURRENT_DEPLOYMENT=.*/CURRENT_DEPLOYMENT=green/' front/.env
+            
             echo "Estado de CURRENT_DEPLOYMENT actualizado a green."
