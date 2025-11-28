@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/bluegreen_key
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
 
       # 🚀 2. DESPLIEGUE GREEN
