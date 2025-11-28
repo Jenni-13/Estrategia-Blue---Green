@@ -35,7 +35,7 @@ jobs:
             echo "Ejecutando despliegue Green con docker-compose..."
             bash scripts/deploy-green.sh || exit 1
             echo "Despliegue Green completado."
-EOF # EOF alineado a la izquierda
+            EOF 
 
       # 🩺 3. HEALTH CHECK GREEN
       - name: 🩺 Health Check Green Server
@@ -46,7 +46,7 @@ EOF # EOF alineado a la izquierda
             docker ps | grep frontend_green || exit 1
             curl -I http://localhost:3001 || exit 1
             echo "Health Check exitoso en el servidor Green."
-EOF # EOF alineado a la izquierda
+            EOF 
 
       # 🔄 4. SWITCH DE TRAFICO
       - name: 🔄 Switch Traffic to Green (Cambio de Router)
@@ -57,4 +57,4 @@ EOF # EOF alineado a la izquierda
             cd ~/Estrategia-Blue---Green
             chmod +x scripts/switch.sh
             bash scripts/switch.sh green
-EOF # EOF alineado a la izquierda
+            EOF 
