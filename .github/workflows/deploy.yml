@@ -14,67 +14,34 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 🔑 CONFIGURACIÓN SSH - VERIFICACIÓN COMPLETA
+      # 🔑 CONFIGURACIÓN SSH
       - name: 🔑 Setup SSH Connection
         run: |
           mkdir -p ~/.ssh
-          # Escribir la clave privada
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          
-          # Agregar host conocido
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
-          
-          # VERIFICACIONES
-          echo "=== Verificando clave SSH ==="
-          ls -la ~/.ssh/deploy_key
-          echo "=== Primeras líneas de la clave ==="
-          head -n 2 ~/.ssh/deploy_key
-          echo "=== Verificando formato ==="
-          file ~/.ssh/deploy_key
 
-      # 🔍 TEST DE CONEXIÓN PRIMERO
-      - name: 🔍 Test SSH Connection
+      # 🔍 VERIFICAR CLAVE PRIMERO
+      - name: 🔍 Verify SSH Key
         run: |
-          echo "Probando conexión SSH..."
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 "echo '✅ CONEXIÓN SSH EXITOSA'" 
+          echo "=== Verificando clave SSH ==="
+          ls -la ~/.ssh/
+          echo "Formato:"
+          file ~/.ssh/deploy_key
+          echo "Primeras líneas:"
+          head -n 2 ~/.ssh/deploy_key
 
-      # 🚀 DESPLIEGUE GREEN - COMANDO CORREGIDO
+      # 🚀 DESPLIEGUE
       - name: 🚀 Deploy Green Server
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'ENDSSH'
-            echo "📍 Directorio actual: $(pwd)"
-            echo "👤 Usuario: $(whoami)"
-            
-            echo "📥 Iniciando pull en el repositorio..."
+            echo "✅ Conectado al servidor exitosamente"
+            echo "📍 Directorio: $(pwd)"
+            echo "📥 Actualizando repositorio..."
             cd ~/Estrategia-Blue---Green
             git pull origin main
-
-            echo "🐳 Ejecutando despliegue Green con docker-compose..."
-            bash scripts/deploy-green.sh || exit 1
-
-            echo "✅ Despliegue Green completado."
-          ENDSSH
-
-      # 🩺 HEALTH CHECK GREEN
-      - name: 🩺 Health Check Green Server
-        run: |
-          echo "🏥 Realizando Health Check en servidor Green..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'ENDSSH'
-            echo "🔍 Verificando contenedores..."
-            docker ps | grep frontend_green || exit 1
-            echo "🌐 Verificando servicio web..."
-            curl -f http://localhost:3001 || exit 1
-            echo "✅ Health Check exitoso en servidor Green."
-          ENDSSH
-
-      # 🔄 SWITCH DE TRAFICO
-      - name: 🔄 Switch Traffic to Green
-        run: |
-          echo "🔄 Cambiando tráfico a servidor Green..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key jennifer13br2004@35.230.70.157 << 'ENDSSH'
-            cd ~/Estrategia-Blue---Green
-            chmod +x scripts/switch.sh
-            bash scripts/switch.sh green
-            echo "✅ Tráfico cambiado a Green exitosamente."
+            echo "🐳 Ejecutando despliegue..."
+            bash scripts/deploy-green.sh
+            echo "✅ Despliegue completado"
           ENDSSH
