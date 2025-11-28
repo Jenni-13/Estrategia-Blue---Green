@@ -14,19 +14,20 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 📜 1. AGREGAR HOST AL known_hosts (VERSIÓN ROBUSTA)
+      # 📜 1. AGREGAR HOST AL known_hosts (ROBUSTO)
       - name: 📜 Add Known Host
         run: |
-          mkdir -p ~/.ssh
+          # 🚨 USANDO LA IP EXTERNA DE GCP: 34.127.35.52
+          mkdir -p ~/.ssh 
           chmod 700 ~/.ssh
-          # Intentamos escanear el host. El '2>/dev/null' ignora errores de red/conexión.
-          ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh-keyscan -H 34.127.35.52 >> ~/.ssh/known_hosts
 
       # 🚀 2. DESPLIEGUE GREEN Y HEALTH CHECK
       - name: 🚀 Deploy Green Server and Check Health
         uses: appleboy/ssh-action@v1.0.1
         with:
-          host: 35.230.70.157
+          # 🚨 IP ACTUALIZADA
+          host: 34.127.35.52
           username: jennifer13br2004
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script_stop: true
@@ -34,20 +35,18 @@ jobs:
             echo "Iniciando pull en el repositorio..."
             cd ~/Estrategia-Blue---Green
             git pull origin main
-
-            echo "Ejecutando despliegue Green con docker-compose..."
             bash scripts/deploy-green.sh || exit 1
-
-            echo "Realizando verificación de salud (Health Check) en el servidor Green..."
+            echo "Realizando verificación de salud (Health Check)..."
             docker ps | grep frontend_green || exit 1
             curl -I http://localhost:3001 || exit 1
-            echo "Health Check exitoso en el servidor Green."
+            echo "Health Check exitoso."
 
       # 🔄 3. SWITCH DE TRAFICO Y ACTUALIZACIÓN DE ESTADO EN .ENV
       - name: 🔄 Switch Traffic to Green (Update Router and .env)
         uses: appleboy/ssh-action@v1.0.1
         with:
-          host: 35.230.70.157
+          # 🚨 IP ACTUALIZADA
+          host: 34.127.35.52
           username: jennifer13br2004
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script_stop: true
@@ -56,4 +55,4 @@ jobs:
             cd ~/Estrategia-Blue---Green
             bash scripts/switch.sh green
             sed -i 's/^CURRENT_DEPLOYMENT=.*/CURRENT_DEPLOYMENT=green/' .env
-            echo "Estado de CURRENT_DEPLOYMENT actualizado a green en .env. Despliegue completado."
+            echo "Estado de CURRENT_DEPLOYMENT actualizado a green."
