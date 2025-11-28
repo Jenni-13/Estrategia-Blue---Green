@@ -10,6 +10,7 @@ else
 fi
 
 # Reinicia el contenedor de Nginx directamente
-docker restart nginx_lb
+# 🚨 CORRECCIÓN: Usar el nombre de contenedor correcto 'nginx'
+docker restart nginx
 
 echo "🔁 Tráfico redirigido a $1 ✓"
