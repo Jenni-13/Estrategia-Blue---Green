@@ -14,12 +14,12 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 📜 1. AGREGAR HOST AL known_hosts (CORRECCIÓN CRÍTICA)
+      # 📜 1. AGREGAR HOST AL known_hosts (CORRECCIÓN FINAL)
       - name: 📜 Add Known Host
         run: |
-          # ➡️ ESTA LÍNEA RESUELVE EL ERROR "No such file or directory"
+          # Crear el directorio .ssh si no existe
           mkdir -p ~/.ssh 
-          # Ahora podemos escribir el known_hosts
+          # Escribir la huella digital del host en known_hosts
           ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
 
       # 🚀 2. DESPLIEGUE GREEN Y HEALTH CHECK (COMBINADO EN UN PASO)
