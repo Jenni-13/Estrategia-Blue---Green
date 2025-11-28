@@ -39,3 +39,4 @@ echo "Estado de CURRENT_DEPLOYMENT actualizado a $NEW_COLOR."
 
 # 6. Reiniciar Nginx para aplicar el cambio de tráfico
 docker compose restart nginx
+docker compose down --remove-orphans
