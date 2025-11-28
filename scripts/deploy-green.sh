@@ -1,9 +1,11 @@
 #!/bin/bash
-echo "🚀 Deploy GREEN"
+echo "🚀 Deploy GREEN (Frontend)"
 
-docker-compose stop frontend_green backend_green
-docker-compose rm -f frontend_green backend_green
-docker-compose build frontend_green backend_green
-docker-compose up -d frontend_green backend_green
+# Usar 'docker compose' y enfocarse solo en el frontend_green
+
+docker compose stop frontend_green
+docker compose rm -f frontend_green
+docker compose build frontend_green
+docker compose up -d frontend_green
 
 echo "GREEN listo ✓"
