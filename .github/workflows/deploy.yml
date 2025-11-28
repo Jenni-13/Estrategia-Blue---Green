@@ -22,34 +22,25 @@ jobs:
           chmod 700 ~/.ssh
           ssh-keyscan -H 34.127.35.52 >> ~/.ssh/known_hosts
 
-      # 🚀 2. DESPLIEGUE GREEN Y HEALTH CHECK
-      - name: 🚀 Deploy Green Server and Check Health
+      # 🚀 2. DESPLIEGUE AUTOMÁTICO Y SWITCH
+      - name: 🚀 Deploy & Switch (Alternancia Blue-Green)
         uses: appleboy/ssh-action@v1.0.1
         with:
-          # 🚨 IP ACTUALIZADA
           host: 34.127.35.52
           username: jennifer13br2004
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script_stop: true
           script: |
-            echo "Iniciando pull en el repositorio..."
+            echo "Iniciando pull y despliegue automatizado..."
             cd ~/Estrategia-Blue---Green
             git fetch origin
             git reset --hard origin/main
             git pull origin main
-            git pull origin main
             
-            # Nota: Asegúrate de que tu deploy-green.sh esté actualizado con las correcciones de Nginx
-            bash scripts/deploy-green.sh || exit 1
+            # Ejecuta el script maestro que se encarga de TODO
+            bash scripts/deploy.sh || exit 1
             
-            echo "Realizando verificación de salud (Health Check)..."
-            docker ps | grep frontend_green || exit 1
-            
-            # 🛑 LÍNEA ELIMINADA/COMENTADA: El curl falla porque el puerto del host (3001) 
-            # no siempre está listo o visible en el entorno del pipeline.
-            # curl -I http://localhost:3001 || exit 1 
-            
-            echo "Health Check exitoso."
+            echo "Despliegue y Switch completado con éxito."
 
       # 🔄 3. SWITCH DE TRAFICO Y ACTUALIZACIÓN DE ESTADO EN .ENV
       - name: 🔄 Switch Traffic to Green (Update Router and .env)
