@@ -14,14 +14,13 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v3
 
-      # 📜 1. AGREGAR HOST AL known_hosts (CORREGIDO Y ROBUSTO)
+      # 📜 1. AGREGAR HOST AL known_hosts (VERSIÓN ROBUSTA)
       - name: 📜 Add Known Host
         run: |
-          # Crear el directorio .ssh si no existe y establecer permisos
-          mkdir -p ~/.ssh 
+          mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          # Escribir la huella digital del host
-          ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts
+          # Intentamos escanear el host. El '2>/dev/null' ignora errores de red/conexión.
+          ssh-keyscan -H 35.230.70.157 >> ~/.ssh/known_hosts 2>/dev/null || true
 
       # 🚀 2. DESPLIEGUE GREEN Y HEALTH CHECK
       - name: 🚀 Deploy Green Server and Check Health
