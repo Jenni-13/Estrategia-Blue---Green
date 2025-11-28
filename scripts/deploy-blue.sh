@@ -1,9 +1,12 @@
 #!/bin/bash
-echo "🚀 Deploy BLUE"
+echo "🚀 Deploy BLUE (Frontend)"
 
-docker-compose stop frontend_blue backend_blue
-docker-compose rm -f frontend_blue backend_blue
-docker-compose build frontend_blue backend_blue
-docker-compose up -d frontend_blue backend_blue
+# Usar 'docker compose' y enfocarse solo en el frontend_blue
+
+docker compose stop frontend_blue
+docker compose rm -f frontend_blue
+docker compose build frontend_blue
+# El -d es crucial para que el script no se quede esperando.
+docker compose up -d frontend_blue
 
 echo "BLUE listo ✓"
