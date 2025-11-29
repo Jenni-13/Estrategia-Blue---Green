@@ -37,7 +37,6 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             git pull origin main
-            git pull origin main
             
             # Nota: Asegúrate de que tu deploy-green.sh esté actualizado con las correcciones de Nginx
             bash scripts/deploy-green.sh || exit 1
